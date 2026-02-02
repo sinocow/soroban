@@ -400,7 +400,7 @@ function buildDisplay(stepObj, prevStepObj) {
 
   let prefix = "";
   if (op === "sub") prefix = "引いては";
-  else if (prevOp === "sub") prefix = "足しては";
+  else if (prevOp === "sub") prefix = "加えて";
 
   return {
     prefix,
@@ -594,3 +594,4 @@ function boot() {
 }
 
 boot();
+
