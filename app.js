@@ -249,7 +249,7 @@ function speakOne(text, opts, token) {
 }
 
 async function speakWish(token) {
-  await speakOne("ねがいましてはぁ", { rate: clamp(Number(rateEl.value) * 1.02, 0.7, 2.0), pitch: 0.92 }, token);
+  await speakOne("願いましては、", { rate: clamp(Number(rateEl.value) * 1.02, 0.7, 2.0), pitch: 0.92 }, token);
 }
 
 async function speakSorobanStep(prefixType, value, token) {
@@ -574,5 +574,6 @@ function boot() {
   // 3) 初期化完了
   isInitializing = false;
 }
+
 
 boot();
