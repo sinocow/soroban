@@ -272,7 +272,7 @@ async function speakSorobanStep(prefixType, value, token) {
 
   let prefixSpeak = "";
   if (prefixType === "sub") prefixSpeak = "引いては";
-  else if (prefixType === "addAfterSub") prefixSpeak = "足しては";
+  else if (prefixType === "addAfterSub") prefixSpeak = "加えて";
 
   const text = `${prefixSpeak}${num}えんなーりー`;
   await speakOne(text, { rate: wholeRate, pitch: 1.0 }, token);
@@ -594,5 +594,6 @@ function boot() {
 }
 
 boot();
+
 
 
