@@ -2,15 +2,19 @@
 // 算盤（読み上げ＋表示）トレーナー
 // - 設定は localStorage に随時保存し、前回設定を自動復元
 // - 起動時に「HTMLデフォルト値」で上書きしないようガード
+// - iOS Safari の初回デフォルト:
+//     rate=0.8, gapMs=300
+//   （※保存済み設定がある場合はそちらを優先）
 // - デフォルト音声: Microsoft Sayaka - Japanese (Japan)(ja-JP)（あれば）
 // - 読み上げ中は「円」表示なし（数字のみ）
 // - 答えの読み上げなし
 // ===============================
 
 // ===== Storage =====
-const STORAGE_KEY = "soroban_trainer_settings_v1"; // ←これを変えるとリセット扱いになります
+const STORAGE_KEY = "soroban_trainer_settings_v1"; // これを変えると別設定扱い
 
-const DEFAULTS = {
+// 既定値（基本）
+const BASE_DEFAULTS = {
   difficulty: "1",
   count: "5",
   mode: "mix",
@@ -21,6 +25,14 @@ const DEFAULTS = {
   voiceLang: "ja-JP",
   advancedOpen: false,
 };
+
+// iOS Safari 判定（ざっくりでOK：Safari以外のiOSブラウザは内部SafariでもUAが違うことがある）
+function isIOSSafari() {
+  const ua = navigator.userAgent || "";
+  const isIOS = /iP(hone|ad|od)/.test(ua);
+  const isSafari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  return isIOS && isSafari;
+}
 
 // ===== DOM =====
 const settingsView = document.getElementById("settingsView");
@@ -101,10 +113,14 @@ function safeParse(json) {
   try { return JSON.parse(json); } catch { return null; }
 }
 
+function hasStoredSettings() {
+  return localStorage.getItem(STORAGE_KEY) != null;
+}
+
 function loadSettings() {
   const raw = localStorage.getItem(STORAGE_KEY);
   const parsed = raw ? safeParse(raw) : null;
-  return { ...DEFAULTS, ...(parsed || {}) };
+  return { ...BASE_DEFAULTS, ...(parsed || {}) };
 }
 
 function saveSettings(obj) {
@@ -137,7 +153,7 @@ function currentSettingsSnapshot() {
 }
 
 function persistNow() {
-  if (isInitializing) return; // ★復元中は保存しない
+  if (isInitializing) return; // 復元中は保存しない
   saveSettings(currentSettingsSnapshot());
 }
 
@@ -211,10 +227,7 @@ function populateVoices() {
   // voice復元（保存値→Sayaka→先頭）
   const st = loadSettings();
   applyVoiceFromStoredOrDefault(st);
-
-  // ★ここでは persistNow() は呼ばない（復元前後の上書きを防ぐ）
-  // ただし、初期化完了後に voiceschanged が来る場合があるので、
-  // そのときはユーザー操作のタイミングで保存されます。
+  // ここでは保存しない（上書き防止）
 }
 
 function waitMs(ms, token) {
@@ -249,7 +262,7 @@ function speakOne(text, opts, token) {
 }
 
 async function speakWish(token) {
-  await speakOne("願いましては、", { rate: clamp(Number(rateEl.value) * 1.02, 0.7, 2.0), pitch: 0.92 }, token);
+  await speakOne("ねがいましては", { rate: clamp(Number(rateEl.value) * 1.02, 0.7, 2.0), pitch: 0.92 }, token);
 }
 
 async function speakSorobanStep(prefixType, value, token) {
@@ -377,7 +390,7 @@ function cross5BySub(before, after) {
   return before >= 5 && after < 5;
 }
 function randInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return Math.floor((Math.random() * (max - min + 1)) + min);
 }
 
 // ===== Display helpers =====
@@ -540,7 +553,7 @@ backBtn.addEventListener("click", () => {
   show(settingsView);
 });
 
-// ===== Boot: 復元 → voice読み込み → 初期化完了 =====
+// ===== Boot: 初回のみ iOS Safari デフォルトを適用してから復元 =====
 function applySettingsToUI(st) {
   difficultyEl.value = st.difficulty;
   countEl.value = st.count;
@@ -557,23 +570,27 @@ function applySettingsToUI(st) {
 }
 
 function boot() {
-  // 1) まず復元してUIに反映（まだ保存しない）
+  // 1) 既存保存が無い初回のみ、iOS Safari用のデフォルトを反映して保存しておく
+  if (!hasStoredSettings() && isIOSSafari()) {
+    const first = { ...BASE_DEFAULTS, rate: "0.8", gapMs: "300" };
+    saveSettings(first); // 初回だけ書き込む（以後は通常どおり保持）
+  }
+
+  // 2) 保存済み設定を読み込み、UIに反映（保存はまだしない）
   const st = loadSettings();
   applySettingsToUI(st);
   show(settingsView);
 
-  // 2) voice一覧を後から埋める（ここでも保存しない）
+  // 3) voice一覧を後から埋める（ここでも保存しない）
   if (window.speechSynthesis) {
     populateVoices();
     speechSynthesis.onvoiceschanged = () => {
       populateVoices();
-      // voiceschangedで勝手に保存しない（ユーザー操作で保存される）
     };
   }
 
-  // 3) 初期化完了
+  // 4) 初期化完了（ここから変更時に保存が動く）
   isInitializing = false;
 }
-
 
 boot();
