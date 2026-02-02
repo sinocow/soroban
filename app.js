@@ -271,8 +271,8 @@ async function speakSorobanStep(prefixType, value, token) {
   const num = toJapaneseNumber(value);
 
   let prefixSpeak = "";
-  if (prefixType === "sub") prefixSpeak = "ひいては";
-  else if (prefixType === "addAfterSub") prefixSpeak = "たしては";
+  if (prefixType === "sub") prefixSpeak = "引いては";
+  else if (prefixType === "addAfterSub") prefixSpeak = "足しては";
 
   const text = `${prefixSpeak}${num}えんなーりー`;
   await speakOne(text, { rate: wholeRate, pitch: 1.0 }, token);
@@ -594,4 +594,5 @@ function boot() {
 }
 
 boot();
+
 
