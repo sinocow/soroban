@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>算盤 読み上げ＋表示 練習</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+
+<body>
+  <main class="wrap">
+
+    <header class="header">
+      <h1>算盤トレーナー</h1>
+    </header>
+
+    <!-- 設定画面（これが無いと app.js が落ちます） -->
+    <section id="settingsView" class="card">
+      <div class="homeGrid">
+        <label class="field">
+          <span>難易度</span>
+          <select id="difficulty">
+            <option value="1">STEP1（1桁 / 0〜9 / 5跨ぎ減算なし）</option>
+            <option value="2">STEP2（1桁 / 10超え必須 / 5跨ぎ減算なし）</option>
+            <option value="3">STEP3（1桁 / 10超え必須 / 5跨ぎ減算あり）</option>
+            <option value="4">STEP4（2桁 / 0未満なし）</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>計算回数</span>
+          <select id="count">
+            <option>4</option>
+            <option selected>5</option>
+            <option>6</option>
+            <option>7</option>
+            <option>8</option>
+            <option>9</option>
+            <option>10</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span>モード</span>
+          <select id="mode">
+            <option value="add">足し算のみ</option>
+            <option value="mix" selected>足し算＋引き算</option>
+          </select>
+        </label>
+      </div>
+
+      <!-- STEP3エラー等のメッセージ -->
+      <div id="warning" class="warning hidden"></div>
+
+      <!-- 詳細設定 -->
+      <details id="advanced" class="advanced">
+        <summary class="advancedSummary">詳細設定</summary>
+
+        <div class="advancedGrid">
+          <label class="field">
+            <span>読み上げ速度</span>
+            <input id="rate" type="range" min="0.7" max="1.4" step="0.05" value="1.05" />
+            <small id="rateLabel">1.05</small>
+          </label>
+
+          <label class="field">
+            <span>数字間の間（ms）</span>
+            <input id="gapMs" type="number" min="0" max="5000" step="50" value="0" />
+          </label>
+
+          <label class="field">
+            <span>答え表示までの待ち（秒）</span>
+            <input id="revealSec" type="number" min="1" max="10" step="1" value="3" />
+          </label>
+
+          <label class="field">
+            <span>音声</span>
+            <select id="voice"></select>
+          </label>
+        </div>
+      </details>
+
+      <div class="actions">
+        <button id="startBtn" class="primary" type="button">Start</button>
+      </div>
+    </section>
+
+    <!-- 出題画面 -->
+    <section id="quizView" class="card hidden">
+      <div class="quizTop">
+        <div class="badge" id="statusBadge">READY</div>
+        <div class="small">
+          <span id="progressText">0/0</span>
+          <button id="stopBtn" class="ghost" type="button">停止</button>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div id="screenPhrase" class="phrase">READY</div>
+        <div id="screenNumber" class="number">—</div>
+      </div>
+
+      <details class="details">
+        <summary>出題ログ（確認用）</summary>
+        <pre id="logArea"></pre>
+      </details>
+    </section>
+
+    <!-- 結果画面 -->
+    <section id="resultView" class="card hidden">
+      <h2>結果</h2>
+
+      <div class="screen result">
+        <div id="resultHeadline" class="phrase">答えは・・・</div>
+        <div id="resultAnswer" class="number hidden">—</div>
+      </div>
+
+      <details class="details">
+        <summary>計算式</summary>
+        <pre id="formulaArea"></pre>
+      </details>
+
+      <div class="actions">
+        <button id="againBtn" class="primary" type="button">もう一問（同条件）</button>
+        <button id="backBtn" class="ghost" type="button">条件選択へ</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- JSは必ず最後で読み込み -->
+  <script src="app.js"></script>
+</body>
+</html>
